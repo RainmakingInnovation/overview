@@ -66,6 +66,14 @@
       .status-not-checked {
         background-color: #bbb;
       }
+
+      .status-checked-working {
+        background-color: #88ab75;
+      }
+
+      .status-checked-not-working {
+        background-color: #e4572e;
+      }
     </style>
   </head>
 
@@ -183,7 +191,21 @@
           var nodes = ifrm.contentWindow.document.getElementsByClassName(
             "nodes"
           );
-          console.log("nodes", nodes);
+          if (nodes.length > 0) {
+            data.status = "checked-working";
+            d3.select(".list-item-" + idx)
+              .select(".status")
+              .attr("class", function () {
+                return "item-content status status-" + data.status;
+              });
+          } else {
+            data.status = "checked-not-working";
+            d3.select(".list-item-" + idx)
+              .select(".status")
+              .attr("class", function () {
+                return "item-content status status-" + data.status;
+              });
+          }
         }, 15000);
       }
     </script>
