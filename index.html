@@ -144,10 +144,14 @@
                   .attr("class", "item-content name")
                   .html(d.name);
 
-                item
+                var pageLink = item
                   .append("div")
                   .attr("class", "item-content link")
                   .html(d.URL);
+
+                pageLink.on("click", function () {
+                  window.open(d.URL, "_blank");
+                });
               });
 
             var i = 1;
