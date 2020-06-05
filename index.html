@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Overview</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js"></script>
+    <link rel="icon" href="assets/favicon.ico" />
+    <style type="text/css">
+      @font-face {
+        font-family: "Graphik Regular";
+        font-style: normal;
+        font-weight: normal;
+        src: local("Graphik Regular"), url("GraphikRegular.woff") format("woff");
+      }
+
+      @font-face {
+        font-family: "Graphik Bold";
+        font-style: normal;
+        font-weight: bold;
+        src: local("Graphik Bold"), url("GraphikBold.woff") format("woff");
+      }
+      body {
+        background-color: #f4f4f4;
+        font-family: "Graphik Regular";
+        align-content: center;
+      }
+
+      .container {
+        text-align: center;
+        margin-top: 40px;
+        color: #474747;
+      }
+
+      .list-item {
+        height: 25px;
+      }
+
+      .item-content {
+        display: inline-block;
+      }
+
+      .status {
+        height: 15px;
+        width: 15px;
+        border-radius: 50%;
+        position: fixed;
+        left: 220px;
+      }
+
+      .name {
+        position: fixed;
+        left: 250px;
+      }
+
+      .link {
+        position: fixed;
+        left: 560px;
+        cursor: pointer;
+      }
+
+      .link:hover {
+        font-weight: bold;
+      }
+
+      .status-not-checked {
+        background-color: #bbb;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container"></div>
+
+    <script>
+      const proxyurl = "https://cors-anywhere.herokuapp.com/";
+      const githubPagesUrl = "https://rainmakinginnovation.github.io/";
+      var el;
+
+      var request = new XMLHttpRequest();
+
+      request.open(
+        "GET",
+        proxyurl + "https://github.com/RainmakingInnovation?tab=repositories",
+        true
+      );
+      //request.responseType = "document";
+      //request.setRequestHeader('Access-Control-Allow-Origin', '*');
+      //request.setRequestHeader('Accept','application/xml');
+      //request.setRequestHeader('Content-Type', 'application/xml');
+      // #user-repositories-list
+      // .wb-break-all
+      request.onload = function (e) {
+        if (request.status === 200) {
+          if (request.readyState === 4) {
+            console.log(request);
+            var repoResponse = request.responseText;
+            el = document.createElement("html");
+            el.innerHTML = repoResponse;
+            console.log(el);
+            var githubRawRepoList = el.querySelectorAll(".wb-break-all");
+            var listOfRepos = [];
+            var listOfReposIgnore = [
+              "RainmakingInnovation.github.io",
+              "overview",
+            ];
+            githubRawRepoList.forEach(function (v) {
+              var obj = {};
+              obj.name = v.textContent.replace(/\n/g, "").trim();
+              obj.URL = githubPagesUrl + obj.name;
+              obj.status = "not-checked";
+              if (listOfReposIgnore.indexOf(obj.name) < 0) {
+                listOfRepos.push(obj);
+              }
+            });
+            listOfRepos = listOfRepos.sort(function (a, b) {
+              return d3.ascending(a.name, b.name);
+            });
+            d3.select(".container")
+              .selectAll(".list-item")
+              .data(listOfRepos)
+              .enter()
+              .append("div")
+              .attr("class", function (d, i) {
+                return "list-item list-item-" + i;
+              })
+              .each(function (d, i) {
+                var item = d3.select(".list-item-" + i);
+
+                item.append("div").attr("class", function () {
+                  return "item-content status status-" + d.status;
+                });
+
+                item
+                  .append("div")
+                  .attr("class", "item-content name")
+                  .html(d.name);
+
+                item
+                  .append("div")
+                  .attr("class", "item-content link")
+                  .html(d.URL);
+              });
+            console.log(listOfRepos[1]);
+            setTimeout(function () {
+              iframe_solution(listOfRepos[1], 1);
+            }, 2000);
+          }
+        }
+      };
+      request.send(null);
+
+      function check_status(data, idx) {
+        console.log("data", data);
+        var xhr = new XMLHttpRequest();
+
+        xhr.open("GET", proxyurl + data.URL, false);
+
+        xhr.onreadystatechange = function (e) {
+          console.log("on load request", xhr);
+          if (xhr.status === 200) {
+            console.log("on status request", xhr);
+            if (xhr.readyState === 4) {
+              /*console.log("ready state request", xhr);
+              var pageResponse = xhr.responseText;
+              el.innerHTML = pageResponse;
+              console.log(el);*/
+            }
+          }
+        };
+
+        xhr.send(null);
+      }
+
+      function iframe_solution(data, idx) {
+        var ifrm = document.createElement("iframe");
+        ifrm.setAttribute("src", data.URL);
+        ifrm.style.width = window.innerWidth + "px";
+        ifrm.style.height = window.innerHeight + "px";
+        ifrm.style.display = "none";
+        document.body.appendChild(ifrm);
+        setTimeout(function () {
+          var nodes = ifrm.contentWindow.document.getElementsByClassName(
+            "nodes"
+          );
+          console.log("nodes", nodes);
+        }, 15000);
+      }
+    </script>
+  </body>
+</html>
